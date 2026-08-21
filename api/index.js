@@ -8,7 +8,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use(express.static(path.join(__dirname, "../frontend")));
+// Trata caminho do frontend com segurança para o Linux
+const frontendPath = path.join(__dirname, "../frontend");
+if (fs.existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+}
 
 const DB_FILE = path.join(__dirname, "db.json");
 
@@ -22,11 +26,19 @@ function readDB() {
     };
   }
 
-  return JSON.parse(fs.readFileSync(DB_FILE));
+  try {
+    return JSON.parse(fs.readFileSync(DB_FILE));
+  } catch (err) {
+    return { usuarios: [], pacientes: [], triagens: [], consultas: [] };
+  }
 }
 
 function writeDB(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.warn("Aviso: Não foi possível escrever no disco no ambiente Render.");
+  }
 }
 
 // LOGIN
@@ -148,4 +160,9 @@ app.get("/medicacoes", (req, res) => {
 });
 
 // START
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
+
 module.exports = app;
