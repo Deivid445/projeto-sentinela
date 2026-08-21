@@ -8,29 +8,48 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use(express.static(path.join(__dirname, "../frontend")));
+// Servir frontend se a pasta existir
+const frontendPath = path.join(__dirname, "../frontend");
+if (fs.existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+}
 
 const DB_FILE = path.join(__dirname, "db.json");
 
+// Variável em memória para evitar quedas no Render caso o disco seja somente-leitura
+let memoryDB = {
+  usuarios: [],
+  pacientes: [],
+  triagens: [],
+  consultas: [],
+  tv_chamada: null,
+  tv_historico: []
+};
+
 function readDB() {
   if (!fs.existsSync(DB_FILE)) {
-    return {
-      usuarios: [],
-      pacientes: [],
-      triagens: [],
-      consultas: [],
-      tv_chamada: null,
-      tv_historico: []
-    };
+    return memoryDB;
   }
-  const db = JSON.parse(fs.readFileSync(DB_FILE));
-  if (!db.tv_chamada) db.tv_chamada = null;
-  if (!db.tv_historico) db.tv_historico = [];
-  return db;
+  try {
+    const fileData = fs.readFileSync(DB_FILE, "utf8");
+    const db = JSON.parse(fileData);
+    if (!db.tv_chamada) db.tv_chamada = null;
+    if (!db.tv_historico) db.tv_historico = [];
+    memoryDB = db;
+    return db;
+  } catch (err) {
+    console.error("Erro ao ler db.json, usando banco em memória:", err);
+    return memoryDB;
+  }
 }
 
 function writeDB(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  memoryDB = data;
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.warn("Aviso: Não foi possível salvar em disco (sistema de arquivos em modo leitura). Dados mantidos em memória temporária.");
+  }
 }
 
 // LOGIN
