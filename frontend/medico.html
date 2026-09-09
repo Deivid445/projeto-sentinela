@@ -91,8 +91,7 @@
   <textarea id="obs" placeholder="Observações"></textarea>
 
   <button onclick="salvar()">Salvar</button>
-  <!-- Botão de Alta Adicionado -->
-  <button class="btn-alta" onclick="encaminharAlta()">📋 Dar Alta / Assinar Certificado</button>
+  <button class="btn-alta" onclick="abrirFormularioAlta()">📋 Dar Alta / Assinar Certificado</button>
 
 </div>
 
@@ -199,14 +198,29 @@ function salvar() {
   });
 }
 
-// Função para redirecionar para a tela de alta.html enviando o nome do paciente selecionado
-function encaminharAlta() {
+// Função para enviar os dados da consulta e abrir a janela de assinatura do termo em alta.html
+function abrirFormularioAlta() {
   const paciente = document.getElementById("paciente").value;
+  const diagnostico = document.getElementById("diagnostico").value;
+  const medicacao = document.getElementById("medicacao").value;
+  const obs = document.getElementById("obs").value;
+
   if (!paciente) {
-    alert("Selecione um paciente clicando em 'Atender' antes de dar alta.");
+    alert("Selecione um paciente clicando em 'Atender' antes de assinar a alta.");
     return;
   }
-  location.href = "alta.html?paciente=" + encodeURIComponent(paciente);
+
+  // Grava/Atualiza os dados da consulta antes de abrir para assinatura
+  fetch("/consulta", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paciente, diagnostico, medicacao, obs })
+  })
+  .then(() => {
+    // Abre a página alta.html em formato de janela modal/popup para a assinatura
+    const url = `alta.html?paciente=${encodeURIComponent(paciente)}&diagnostico=${encodeURIComponent(diagnostico)}&medicacao=${encodeURIComponent(medicacao)}&obs=${encodeURIComponent(obs)}`;
+    window.open(url, "AssinaturaAlta", "width=600,height=700,scrollbars=yes");
+  });
 }
 
 carregar();
