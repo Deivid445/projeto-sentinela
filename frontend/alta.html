@@ -1,1 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Assinatura de Alta Médica</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f6f9; }
+    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .campo { margin-bottom: 12px; }
+    .btn-confirmar { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 15px; }
+    .btn-confirmar:hover { background: #218838; }
+  </style>
+</head>
+<body>
 
+<div class="card">
+  <h2>📜 Termo de Alta Hospitalar</h2>
+  <hr>
+  <div class="campo"><strong>Paciente:</strong> <span id="lblPaciente"></span></div>
+  <div class="campo"><strong>Diagnóstico:</strong> <span id="lblDiagnostico"></span></div>
+  <div class="campo"><strong>Medicação Prescrita:</strong> <span id="lblMedicacao"></span></div>
+  <div class="campo"><strong>Observações:</strong> <span id="lblObs"></span></div>
+  <hr>
+  
+  <div class="campo">
+    <label><strong>Nome / CRM do Médico:</strong></label>
+    <input type="text" id="medicoCrm" placeholder="Ex: Dr. Silva - CRM 12345" style="width: 100%; padding: 8px; margin-top: 5px;">
+  </div>
+
+  <div class="campo" style="margin-top: 15px;">
+    <input type="checkbox" id="checkAssinatura">
+    <label for="checkAssinatura"> Confirmo e assino digitalmente a alta deste paciente.</label>
+  </div>
+
+  <button class="btn-confirmar" onclick="concluirAlta()">Assinar e Emitir Alta</button>
+</div>
+
+<script>
+// Carrega os parâmetros passados da tela do médico
+const params = new URLSearchParams(window.location.search);
+document.getElementById('lblPaciente').innerText = params.get('paciente') || 'Não informado';
+document.getElementById('lblDiagnostico').innerText = params.get('diagnostico') || 'Não informado';
+document.getElementById('lblMedicacao').innerText = params.get('medicacao') || 'Nenhuma';
+document.getElementById('lblObs').innerText = params.get('obs') || 'Nenhuma';
+
+function concluirAlta() {
+  const crm = document.getElementById('medicoCrm').value;
+  const assinado = document.getElementById('checkAssinatura').checked;
+
+  if (!crm) { alert('Informe o nome e CRM do médico.'); return; }
+  if (!assinado) { alert('Você precisa marcar a caixa de confirmação para assinar.'); return; }
+
+  alert('✅ Alta médica assinada e emitida com sucesso!');
+  window.close(); // Fecha o formulário
+}
+</script>
+
+</body>
+</html>
