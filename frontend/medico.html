@@ -44,6 +44,17 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+    .btn-alta {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+    .btn-alta:hover { background: #bd2130; }
   </style>
 </head>
 
@@ -80,6 +91,8 @@
   <textarea id="obs" placeholder="Observações"></textarea>
 
   <button onclick="salvar()">Salvar</button>
+  <!-- Botão de Alta Adicionado -->
+  <button class="btn-alta" onclick="encaminharAlta()">📋 Dar Alta / Assinar Certificado</button>
 
 </div>
 
@@ -184,6 +197,16 @@ function salvar() {
     document.getElementById("medicacao").value = "";
     document.getElementById("obs").value = "";
   });
+}
+
+// Função para redirecionar para a tela de alta.html enviando o nome do paciente selecionado
+function encaminharAlta() {
+  const paciente = document.getElementById("paciente").value;
+  if (!paciente) {
+    alert("Selecione um paciente clicando em 'Atender' antes de dar alta.");
+    return;
+  }
+  location.href = "alta.html?paciente=" + encodeURIComponent(paciente);
 }
 
 carregar();
