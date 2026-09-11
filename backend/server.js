@@ -8,17 +8,23 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Servir frontend se a pasta existir
+// Servir frontend se a pasta existir (suporta tanto subpasta ../frontend quanto na raiz)
 const frontendPath = path.join(__dirname, "../frontend");
 if (fs.existsSync(frontendPath)) {
   app.use(express.static(frontendPath));
+} else {
+  app.use(express.static(__dirname));
 }
 
 const DB_FILE = path.join(__dirname, "db.json");
 
-// Variável em memória para evitar quedas no Render caso o disco seja somente-leitura
-let memoryDB = {
-  usuarios: [],
+// Estrutura inicial do banco caso não exista
+const initialData = {
+  usuarios: [
+    { usuario: "admin", senha: "123", tipo: "triagem" },
+    { usuario: "medico", senha: "123", tipo: "medico" },
+    { usuario: "atendimento", senha: "123", tipo: "atendimento" }
+  ],
   pacientes: [],
   triagens: [],
   consultas: [],
@@ -26,13 +32,21 @@ let memoryDB = {
   tv_historico: []
 };
 
+// Variável em memória para evitar quedas no Render/Heroku caso o disco seja somente-leitura
+let memoryDB = { ...initialData };
+
 function readDB() {
   if (!fs.existsSync(DB_FILE)) {
-    return memoryDB;
+    writeDB(initialData);
+    return initialData;
   }
   try {
     const fileData = fs.readFileSync(DB_FILE, "utf8");
     const db = JSON.parse(fileData);
+    if (!db.usuarios || db.usuarios.length === 0) db.usuarios = initialData.usuarios;
+    if (!db.pacientes) db.pacientes = [];
+    if (!db.triagens) db.triagens = [];
+    if (!db.consultas) db.consultas = [];
     if (!db.tv_chamada) db.tv_chamada = null;
     if (!db.tv_historico) db.tv_historico = [];
     memoryDB = db;
@@ -76,9 +90,9 @@ app.post("/atendimento", (req, res) => {
     id: Date.now(),
     nome: req.body.nome,
     cpf: req.body.cpf,
-    tipo: req.body.tipo,
+    tipo: req.body.tipo || "Particular",
     status: "triagem",
-    createdAt: new Date()
+    createdAt: new Date().toISOString()
   };
 
   db.pacientes.push(paciente);
@@ -116,8 +130,12 @@ app.post("/triagem", (req, res) => {
     observacao: req.body.observacao,
     risco,
     status: "aguardando_medico",
-    createdAt: new Date()
+    createdAt: new Date().toISOString()
   };
+
+  // Atualiza o status do paciente na lista geral de atendimento
+  const pac = db.pacientes.find(p => p.nome.toLowerCase() === req.body.nome.toLowerCase());
+  if (pac) pac.status = "atendido_triagem";
 
   db.triagens.push(triagem);
   writeDB(db);
@@ -133,8 +151,6 @@ app.get("/triagens", (req, res) => {
 
 // ============ MÍDIA INDOOR - TV ============
 
-// Função criada para enviar a chamada do paciente para a tela da TV.
-// Serve para triagem chamar o paciente no guichê e para o médico chamar no consultório.
 app.post("/tv/chamar", (req, res) => {
   const db = readDB();
 
@@ -154,8 +170,6 @@ app.post("/tv/chamar", (req, res) => {
   res.json(chamada);
 });
 
-// Função criada para consultar a chamada atual e o histórico que será exibido na TV.
-// Essa rota é usada para atualizar a tela automaticamente a cada poucos segundos.
 app.get("/tv/chamada", (req, res) => {
   const db = readDB();
   res.json({
@@ -164,7 +178,7 @@ app.get("/tv/chamada", (req, res) => {
   });
 });
 
-// LISTA DE MEDICAÇÕES
+// LISTA DE MEDICAÇÕES CADASTRADAS
 app.get("/lista-medicacoes", (req, res) => {
   res.json([
     "Dipirona",
@@ -190,8 +204,11 @@ app.post("/consulta", (req, res) => {
     diagnostico: req.body.diagnostico,
     medicacao: req.body.medicacao,
     obs: req.body.obs,
-    createdAt: new Date()
+    createdAt: new Date().toISOString()
   };
+
+  // Remove o paciente da fila de triagem pendente após o atendimento do médico
+  db.triagens = db.triagens.filter(t => t.nome.toLowerCase() !== req.body.paciente.toLowerCase());
 
   db.consultas.push(consulta);
   writeDB(db);
@@ -199,7 +216,7 @@ app.post("/consulta", (req, res) => {
   res.json(consulta);
 });
 
-// MEDICAÇÕES
+// MEDICAÇÕES PRESCRITAS
 app.get("/medicacoes", (req, res) => {
   const db = readDB();
   res.json(db.consultas);
@@ -208,5 +225,5 @@ app.get("/medicacoes", (req, res) => {
 // START
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
