@@ -2,11 +2,49 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atendimento</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Barra de Navegação */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #0056b3;
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 20px;
+    }
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .navbar a:hover, .navbar a.active {
+      background-color: #003d80;
+    }
+  </style>
 </head>
 <body>
 <div class="container">
-  <h2>Atendimento</h2>
+
+  <!-- Menu de Navegação Global -->
+  <nav class="navbar">
+    <div>
+      <a href="atendimento.html" class="active">Atendimento</a>
+      <a href="triagem.html">Triagem</a>
+      <a href="medico.html">Médico</a>
+      <a href="medicacoes.html">Medicações</a>
+      <a href="alta.html">Alta</a>
+    </div>
+    <a href="index.html" style="background-color: #dc3545;">Sair</a>
+  </nav>
+
+  <h2>🏥 Cadastro de Atendimento</h2>
 
   <input id="nome" placeholder="Nome">
   <input id="cpf" placeholder="CPF">
@@ -39,16 +77,6 @@
 
 <script>
 async function cadastrar() {
-  // Coletando o valor de todos os campos
-  <Sequence>
-    <Step title="Coletar os dados do formulário">
-      Extraímos o valor de cada elemento usando `document.getElementById()`.
-    </Step>
-    <Step title="Enviar para a API">
-      Montamos o objeto JSON completo com todas as informações.
-    </Step>
-  </Sequence>
-
   const dadosPaciente = {
     nome: document.getElementById("nome").value,
     cpf: document.getElementById("cpf").value,
