@@ -1,23 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicações Prescritas</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Barra de Navegação */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #0056b3;
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 20px;
+    }
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .navbar a:hover, .navbar a.active {
+      background-color: #003d80;
+    }
+  </style>
 </head>
 
 <body>
 
 <div class="container">
 
+  <!-- Menu de Navegação Global -->
+  <nav class="navbar">
+    <div>
+      <a href="atendimento.html">Atendimento</a>
+      <a href="triagem.html">Triagem</a>
+      <a href="medico.html">Médico</a>
+      <a href="medicacoes.html" class="active">Medicações</a>
+      <a href="alta.html">Alta</a>
+    </div>
+    <a href="index.html" style="background-color: #dc3545;">Sair</a>
+  </nav>
+
   <h2>💊 Medicações Prescritas</h2>
 
-  <!-- IMPLEMENTADO: local onde a lista de medicações será exibida -->
+  <!-- Local onde a lista de medicações será exibida -->
   <div id="listaMedicacoes"></div>
 
 </div>
 
 <script>
 
-// IMPLEMENTADO: busca as consultas salvas e mostra as medicações
 function carregarMedicacoesPrescritas() {
   fetch("/medicacoes")
     .then(r => r.json())
@@ -27,7 +64,7 @@ function carregarMedicacoesPrescritas() {
       div.innerHTML = "";
 
       if (data.length === 0) {
-        div.innerHTML = "<p>Nenhuma medicação prescrita.</p>";
+        div.innerHTML = "<p style='text-align:center; color:#888;'>Nenhuma medicação prescrita.</p>";
         return;
       }
 
@@ -43,7 +80,7 @@ function carregarMedicacoesPrescritas() {
 
             <p>
               <b>Diagnóstico:</b>
-              ${c.diagnostico}
+              ${c.diagnostico || "Não informado"}
             </p>
 
             <p>
@@ -53,6 +90,10 @@ function carregarMedicacoesPrescritas() {
           </div>
         `;
       });
+    })
+    .catch(err => {
+      console.error("Erro ao carregar medicações:", err);
+      document.getElementById("listaMedicacoes").innerHTML = "<p style='color:red;'>Erro ao carregar lista de medicações.</p>";
     });
 }
 
