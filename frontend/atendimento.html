@@ -77,9 +77,17 @@
 
 <script>
 async function cadastrar() {
+  const nome = document.getElementById("nome").value;
+  const cpf = document.getElementById("cpf").value;
+
+  if (!nome || !cpf) {
+    alert("Por favor, preencha pelo menos o Nome e o CPF.");
+    return;
+  }
+
   const dadosPaciente = {
-    nome: document.getElementById("nome").value,
-    cpf: document.getElementById("cpf").value,
+    nome: nome,
+    cpf: cpf,
     dataNascimento: document.getElementById("dataNascimento").value,
     sexo: document.getElementById("sexo").value,
     nomeMae: document.getElementById("nomeMae").value,
@@ -92,7 +100,8 @@ async function cadastrar() {
   };
 
   try {
-    const resposta = await fetch("http://localhost:3000/atendimento", {
+    // Rota relativa "/atendimento" funciona tanto localmente quanto no Render
+    const resposta = await fetch("/atendimento", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -101,14 +110,30 @@ async function cadastrar() {
     });
 
     if (resposta.ok) {
-      alert("Paciente enviado para triagem com sucesso!");
+      alert("✅ Paciente enviado para triagem com sucesso!");
+      limparCampos();
     } else {
-      alert("Erro ao cadastrar paciente.");
+      alert("❌ Erro ao cadastrar paciente.");
     }
   } catch (erro) {
     console.error("Erro na requisição:", erro);
     alert("Não foi possível conectar ao servidor.");
   }
+}
+
+function limparCampos() {
+  document.getElementById("nome").value = "";
+  document.getElementById("cpf").value = "";
+  document.getElementById("dataNascimento").value = "";
+  document.getElementById("sexo").selectedIndex = 0;
+  document.getElementById("nomeMae").value = "";
+  document.getElementById("estadoCivil").value = "";
+  document.getElementById("endereco").value = "";
+  document.getElementById("telefone").value = "";
+  document.getElementById("email").value = "";
+  document.getElementById("contato").value = "";
+  document.getElementById("tipo").selectedIndex = 0;
+  document.getElementById("foto").value = "";
 }
 </script>
 </body>
