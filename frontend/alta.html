@@ -2,9 +2,34 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assinatura de Alta Médica</title>
+  <link rel="stylesheet" href="style.css">
   <style>
     body { font-family: sans-serif; padding: 20px; background: #f4f6f9; }
+    
+    /* Barra de Navegação */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #0056b3;
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 20px;
+    }
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .navbar a:hover, .navbar a.active {
+      background-color: #003d80;
+    }
+
     .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .campo { margin-bottom: 12px; }
     .btn-confirmar { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 15px; }
@@ -14,6 +39,19 @@
 <body>
 
 <div class="card">
+
+  <!-- Menu de Navegação Global -->
+  <nav class="navbar">
+    <div>
+      <a href="atendimento.html">Atendimento</a>
+      <a href="triagem.html">Triagem</a>
+      <a href="medico.html">Médico</a>
+      <a href="medicacoes.html">Medicações</a>
+      <a href="alta.html" class="active">Alta</a>
+    </div>
+    <a href="index.html" style="background-color: #dc3545;">Sair</a>
+  </nav>
+
   <h2>📜 Termo de Alta Hospitalar</h2>
   <hr>
   <div class="campo"><strong>Paciente:</strong> <span id="lblPaciente"></span></div>
@@ -51,7 +89,11 @@ function concluirAlta() {
   if (!assinado) { alert('Você precisa marcar a caixa de confirmação para assinar.'); return; }
 
   alert('✅ Alta médica assinada e emitida com sucesso!');
-  window.close(); // Fecha o formulário
+  if (window.opener) {
+    window.close(); // Fecha a janela popup se foi aberta a partir da tela médica
+  } else {
+    window.location.href = "medico.html"; // Redireciona de volta se acessada diretamente
+  }
 }
 </script>
 
