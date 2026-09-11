@@ -27,18 +27,25 @@ function login() {
             senha: senhaVal
         })
     })
-    .then(r => r.json())
+    .then(async r => {
+        if (!r.ok) {
+            throw new Error("Usuário ou senha incorretos");
+        }
+        return r.json();
+    })
     .then(data => {
-        if (data.tipo === "triagem") location.href = "triagem.html";
-        else if (data.tipo === "medico") location.href = "medico.html";
-        else if (data.tipo === "atendimento") location.href = "atendimento.html";
-        else if (data.tipo === "alta") location.href = "alta.html";
-        else if (data.tipo === "medicacoes") location.href = "medicacoes.html";
-        else alert("Usuário ou senha incorretos / perfil não identificado.");
+        // Pega o tipo tanto se vier direto 'data.tipo' quanto se o servidor responder 'data'
+        const tipo = data.tipo;
+
+        if (tipo === "triagem") location.href = "triagem.html";
+        else if (tipo === "medico") location.href = "medico.html";
+        else if (tipo === "atendimento") location.href = "atendimento.html";
+        else if (tipo === "alta") location.href = "alta.html";
+        else if (tipo === "medicacoes") location.href = "medicacoes.html";
+        else alert("Perfil de usuário não identificado.");
     })
     .catch(err => {
-        console.error("Erro ao realizar login:", err);
-        alert("Erro de conexão com o servidor.");
+        alert("Usuário ou senha incorretos / perfil não identificado.");
     });
 }
 </script>
