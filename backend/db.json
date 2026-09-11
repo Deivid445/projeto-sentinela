@@ -19,11 +19,8 @@
   "pacientes": [],
   "triagens": [],
   "consultas": [],
-  "tv": {
-    "localTipo": "",
-    "localNumero": "",
-    "paciente": ""
-  },
+  "tv_chamada": null,
+  "tv_historico": [],
   "medicacoesCadastradas": [
     "Paracetamol 500mg",
     "Dipirona 1g",
