@@ -1,8 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-  <link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Médico</title>
+  <link rel="stylesheet" href="style.css">
   <style>
+    /* Barra de Navegação */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #0056b3;
+      padding: 10px 20px;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 20px;
+    }
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .navbar a:hover, .navbar a.active {
+      background-color: #003d80;
+    }
+
     .btn-tv {
       background: #28a745;
       color: white;
@@ -62,13 +87,25 @@
 
 <div class="container">
 
+  <!-- Menu de Navegação Global -->
+  <nav class="navbar">
+    <div>
+      <a href="atendimento.html">Atendimento</a>
+      <a href="triagem.html">Triagem</a>
+      <a href="medico.html" class="active">Médico</a>
+      <a href="medicacoes.html">Medicações</a>
+      <a href="alta.html">Alta</a>
+    </div>
+    <a href="index.html" style="background-color: #dc3545;">Sair</a>
+  </nav>
+
   <!-- Cabeçalho com botão da TV -->
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
     <h2 style="margin:0;">🩺 Painel Médico</h2>
     <button class="btn-abrir-tv" onclick="window.open('tv.html','_blank')">📺 Abrir Tela da TV</button>
   </div>
 
-  <!-- Campo criado para informar o consultório e chamar o paciente na TV -->
+  <!-- Campo para informar o consultório e chamar na TV -->
   <div class="consultorio-input">
     <label>Meu Consultório:</label>
     <input type="text" id="consultorio-num" value="01">
@@ -132,7 +169,6 @@ function carregar() {
     });
 }
 
-// Função criada para enviar o nome do paciente para a TV quando ele for chamado no consultório.
 function chamarNaTV(nome) {
   const consultorio = document.getElementById("consultorio-num").value || "01";
   fetch("/tv/chamar", {
@@ -198,7 +234,6 @@ function salvar() {
   });
 }
 
-// Função para enviar os dados da consulta e abrir a janela de assinatura do termo em alta.html
 function abrirFormularioAlta() {
   const paciente = document.getElementById("paciente").value;
   const diagnostico = document.getElementById("diagnostico").value;
@@ -210,14 +245,12 @@ function abrirFormularioAlta() {
     return;
   }
 
-  // Grava/Atualiza os dados da consulta antes de abrir para assinatura
   fetch("/consulta", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ paciente, diagnostico, medicacao, obs })
   })
   .then(() => {
-    // Abre a página alta.html em formato de janela modal/popup para a assinatura
     const url = `alta.html?paciente=${encodeURIComponent(paciente)}&diagnostico=${encodeURIComponent(diagnostico)}&medicacao=${encodeURIComponent(medicacao)}&obs=${encodeURIComponent(obs)}`;
     window.open(url, "AssinaturaAlta", "width=600,height=700,scrollbars=yes");
   });
@@ -225,8 +258,6 @@ function abrirFormularioAlta() {
 
 carregar();
 carregarMedicacoes();
-
-// Atualiza lista automaticamente a cada 10 segundos
 setInterval(carregar, 10000);
 
 </script>
