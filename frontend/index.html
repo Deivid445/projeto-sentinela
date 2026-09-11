@@ -1,32 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Hospitalar - Login</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="container">
-  <h2>🏥 Sistema Hospitalar</h2>
-  <input id="usuario" placeholder="Usuário">
-  <input id="senha" type="password" placeholder="Senha">
-  <button onclick="login()">Entrar</button>
+    <h2>🏥 Sistema Hospitalar</h2>
+    <input id="usuario" placeholder="Usuário">
+    <input id="senha" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
 </div>
 
 <script>
 function login() {
-  fetch("/login", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      usuario: usuario.value,
-      senha: senha.value
+    const usuarioVal = document.getElementById("usuario").value;
+    const senhaVal = document.getElementById("senha").value;
+
+    fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            usuario: usuarioVal,
+            senha: senhaVal
+        })
     })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if(data.tipo === "triagem") location.href = "triagem.html";
-    if(data.tipo === "medico") location.href = "medico.html";
-    if(data.tipo === "atendimento") location.href = "atendimento.html";
-  });
+    .then(r => r.json())
+    .then(data => {
+        if (data.tipo === "triagem") location.href = "triagem.html";
+        else if (data.tipo === "medico") location.href = "medico.html";
+        else if (data.tipo === "atendimento") location.href = "atendimento.html";
+        else if (data.tipo === "alta") location.href = "alta.html";
+        else if (data.tipo === "medicacoes") location.href = "medicacoes.html";
+        else alert("Usuário ou senha incorretos / perfil não identificado.");
+    })
+    .catch(err => {
+        console.error("Erro ao realizar login:", err);
+        alert("Erro de conexão com o servidor.");
+    });
 }
 </script>
 </body>
