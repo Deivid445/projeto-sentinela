@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assinatura de Alta Médica</title>
-  <link rel="stylesheet" href="style.css">
+  
+  <!-- Biblioteca para conversão de HTML para PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f4f6f9; }
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; background: #f4f6f9; color: #333; }
     
     /* Barra de Navegação */
     .navbar {
@@ -30,18 +33,38 @@
       background-color: #003d80;
     }
 
-    .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .campo { margin-bottom: 12px; }
-    .btn-confirmar { background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 15px; }
+    .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }
+    
+    /* Estilização da Folha Oficial de Alta */
+    .documento-header { text-align: center; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px; }
+    .documento-header h2 { color: #0056b3; margin: 0; font-size: 22px; }
+    .documento-header p { margin: 5px 0 0 0; color: #666; font-size: 12px; }
+
+    .campo { margin-bottom: 14px; font-size: 15px; line-height: 1.5; }
+    .campo strong { color: #1a365d; }
+    
+    .carimbo-assinatura {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px dashed #28a745;
+      background-color: #f8fff9;
+      border-radius: 6px;
+      display: none; /* Exibido apenas no PDF */
+    }
+
+    .btn-confirmar { background: #28a745; color: white; border: none; padding: 12px 18px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 20px; font-weight: bold; }
     .btn-confirmar:hover { background: #218838; }
+
+    /* Esconde elementos indesejados durante a geração do PDF */
+    .no-print { display: block; }
   </style>
 </head>
 <body>
 
-<div class="card">
+<div class="card" id="conteudoTermo">
 
-  <!-- Menu de Navegação Global -->
-  <nav class="navbar">
+  <!-- Menu de Navegação Global (Será ocultado no PDF) -->
+  <nav class="navbar no-print">
     <div>
       <a href="atendimento.html">Atendimento</a>
       <a href="triagem.html">Triagem</a>
@@ -52,47 +75,97 @@
     <a href="index.html" style="background-color: #dc3545;">Sair</a>
   </nav>
 
-  <h2>📜 Termo de Alta Hospitalar</h2>
-  <hr>
+  <div class="documento-header">
+    <h2>📜 Termo de Alta Hospitalar</h2>
+    <p>Documento Clínico de Liberação do Paciente</p>
+  </div>
+
   <div class="campo"><strong>Paciente:</strong> <span id="lblPaciente"></span></div>
   <div class="campo"><strong>Diagnóstico:</strong> <span id="lblDiagnostico"></span></div>
   <div class="campo"><strong>Medicação Prescrita:</strong> <span id="lblMedicacao"></span></div>
-  <div class="campo"><strong>Observações:</strong> <span id="lblObs"></span></div>
-  <hr>
+  <div class="campo"><strong>Observações / Orientações:</strong> <span id="lblObs"></span></div>
+  <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
   
-  <div class="campo">
+  <div class="campo no-print">
     <label><strong>Nome / CRM do Médico:</strong></label>
-    <input type="text" id="medicoCrm" placeholder="Ex: Dr. Silva - CRM 12345" style="width: 100%; padding: 8px; margin-top: 5px;">
+    <input type="text" id="medicoCrm" placeholder="Ex: Dr. Silva - CRM 12345" style="width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;">
   </div>
 
-  <div class="campo" style="margin-top: 15px;">
+  <div class="campo no-print" style="margin-top: 15px;">
     <input type="checkbox" id="checkAssinatura">
     <label for="checkAssinatura"> Confirmo e assino digitalmente a alta deste paciente.</label>
   </div>
 
-  <button class="btn-confirmar" onclick="concluirAlta()">Assinar e Emitir Alta</button>
+  <!-- Bloco de Assinatura Digital Exibido no PDF -->
+  <div id="blocoAssinaturaPDF" class="carimbo-assinatura">
+    <p style="margin: 0; font-size: 13px; color: #28a745; font-weight: bold;">✓ ASSINADO DIGITALMENTE</p>
+    <p style="margin: 3px 0; font-size: 14px;"><strong>Médico Responsável:</strong> <span id="pdfMedicoCrm"></span></p>
+    <p style="margin: 0; font-size: 11px; color: #666;">Data/Hora de Emissão: <span id="pdfDataHora"></span></p>
+  </div>
+
+  <button class="btn-confirmar no-print" onclick="concluirEGerarPDF()">Assinar, Emitir e Gerar PDF</button>
 </div>
 
 <script>
-// Carrega os parâmetros passados da tela do médico
+// Carrega os parâmetros passados da URL
 const params = new URLSearchParams(window.location.search);
-document.getElementById('lblPaciente').innerText = params.get('paciente') || 'Não informado';
+const pacienteNome = params.get('paciente') || 'Não informado';
+
+document.getElementById('lblPaciente').innerText = pacienteNome;
 document.getElementById('lblDiagnostico').innerText = params.get('diagnostico') || 'Não informado';
 document.getElementById('lblMedicacao').innerText = params.get('medicacao') || 'Nenhuma';
 document.getElementById('lblObs').innerText = params.get('obs') || 'Nenhuma';
 
-function concluirAlta() {
-  const crm = document.getElementById('medicoCrm').value;
+async function concluirEGerarPDF() {
+  const crm = document.getElementById('medicoCrm').value.trim();
   const assinado = document.getElementById('checkAssinatura').checked;
 
-  if (!crm) { alert('Informe o nome e CRM do médico.'); return; }
-  if (!assinado) { alert('Você precisa marcar a caixa de confirmação para assinar.'); return; }
+  if (!crm) { 
+    alert('Informe o nome e CRM do médico.'); 
+    return; 
+  }
+  if (!assinado) { 
+    alert('Você precisa marcar a caixa de confirmação para assinar.'); 
+    return; 
+  }
 
-  alert('✅ Alta médica assinada e emitida com sucesso!');
-  if (window.opener) {
-    window.close(); // Fecha a janela popup se foi aberta a partir da tela médica
-  } else {
-    window.location.href = "medico.html"; // Redireciona de volta se acessada diretamente
+  // Prepara o bloco de assinatura para o PDF
+  document.getElementById('pdfMedicoCrm').innerText = crm;
+  document.getElementById('pdfDataHora').innerText = new Date().toLocaleString('pt-BR');
+  document.getElementById('blocoAssinaturaPDF').style.display = 'block';
+
+  // Esconde elementos de controle/navegação antes de capturar a tela
+  const elementosSemImpressao = document.querySelectorAll('.no-print');
+  elementosSemImpressao.forEach(el => el.style.display = 'none');
+
+  // Configuração do PDF
+  const elemento = document.getElementById('conteudoTermo');
+  const opcoes = {
+    margin:       15,
+    filename:     `Termo_de_Alta_${pacienteNome.replace(/\s+/g, '_')}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    // Gera o PDF
+    await html2pdf().set(opcoes).from(elemento).save();
+
+    alert('✅ Alta médica emitida e PDF gerado com sucesso!');
+
+    if (window.opener) {
+      window.close();
+    } else {
+      window.location.href = "medico.html";
+    }
+  } catch (erro) {
+    console.error('Erro ao gerar PDF:', erro);
+    alert('Erro ao gerar o PDF da alta.');
+    
+    // Restaura a tela caso ocorra erro
+    elementosSemImpressao.forEach(el => el.style.display = 'block');
+    document.getElementById('blocoAssinaturaPDF').style.display = 'none';
   }
 }
 </script>
