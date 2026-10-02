@@ -1,0 +1,10 @@
+services:
+ 
+  app:
+    # Constrói a imagem usando o Dockerfile desta pasta
+    build: .
+    # Nome do container
+    container_name: hospital-sentinela
+    # Porta do computador : porta do container
+    ports:
+      - "3000:3000"
