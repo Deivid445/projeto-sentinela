@@ -8,3 +8,17 @@ services:
     # Porta do computador : porta do container
     ports:
       - "3000:3000"
+   # Liga o volume à PASTA de dados, não ao arquivo
+    volumes:
+      - dados_hospital:/app/backend/data
+ 
+# Declara o volume nomeado
+volumes:
+  dados_hospital:
+# Constrói a imagem e sobe o container em segundo plano
+docker compose up -d --build
+# Apaga o container (o volume continua existindo)
+docker compose down
+ 
+# Sobe de novo: os dados devem estar lá
+docker compose up -d
